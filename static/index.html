@@ -33,9 +33,8 @@
 
 <nav class="navbar">
   <div class="inner">
-    <button class="nav-item" id="btn-import"><span class="ic">📋</span>ייבוא מ-WhatsApp</button>
-    <button class="nav-item primary" id="btn-new"><span class="ic">＋</span>בקשה חדשה</button>
     <button class="nav-item on" id="btn-queue"><span class="ic">◉</span>תור עבודות</button>
+    <button class="nav-item primary" id="btn-new"><span class="ic">＋</span>בקשה חדשה</button>
   </div>
 </nav>
 
@@ -60,13 +59,6 @@
       <button class="btn-close" data-close>&times;</button>
     </div>
     <div class="sheet-body">
-      <div id="import-zone" hidden>
-        <label style="font-size:12px;color:var(--muted)">הדבק כאן את הודעת ה-WhatsApp:</label>
-        <textarea id="import-text" rows="8" placeholder="*בקשת ייצור*&#10;פרויקט:&#10;* ..."></textarea>
-        <button class="btn primary" id="btn-parse">פרק לשדות ⬇</button>
-        <div id="parse-result" class="parse-note"></div>
-        <hr>
-      </div>
       <form id="req-form">
         <div class="fgrid">
           <label>פרויקט *<input name="project"></label>

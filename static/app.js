@@ -240,10 +240,7 @@ const FORM_FIELDS = ["project", "project_alias", "subject", "quantity", "request
 
 function openForm(mode, data) {
   state.editId = mode === "edit" ? data.id : null;
-  $("#form-title").textContent = { new: "בקשה חדשה", edit: `עריכת בקשה #${data?.serial ?? ""}`, import: "ייבוא מ-WhatsApp" }[mode];
-  $("#import-zone").hidden = mode !== "import";
-  $("#import-text").value = "";
-  $("#parse-result").textContent = "";
+  $("#form-title").textContent = { new: "בקשה חדשה", edit: `עריכת בקשה #${data?.serial ?? ""}` }[mode];
   const f = $("#req-form");
   f.reset();
   if (data) for (const k of FORM_FIELDS) if (f[k] && data[k]) f[k].value = data[k];
@@ -266,27 +263,6 @@ function updateMissingNote() {
   const missing = Object.entries(req).filter(([k]) => !d[k]).map(([, v]) => v);
   $("#form-missing").textContent = missing.length
     ? `⚠ חסרים: ${missing.join(", ")} — הבקשה תיקלט כ"מעוכבת" עד השלמתם` : "";
-}
-
-async function parseImport() {
-  const text = $("#import-text").value.trim();
-  if (!text) return;
-  const parsed = await api("/api/parse", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-  const f = $("#req-form");
-  for (const k of FORM_FIELDS) if (f[k] && parsed[k]) f[k].value = parsed[k];
-  const note = $("#parse-result");
-  if (parsed.missing.length) {
-    note.className = "parse-note warn";
-    note.textContent = `זוהו השדות. חסרים: ${parsed.missing.join(", ")} — השלם ידנית או שמור כ"מעוכבת".`;
-  } else {
-    note.className = "parse-note ok";
-    note.textContent = `✔ כל שדות החובה זוהו. סטטוס צפוי: ${parsed.suggested_status}. בדוק את התאריכים לפני שמירה.`;
-  }
-  updateMissingNote();
 }
 
 async function saveForm() {
@@ -315,9 +291,7 @@ async function saveForm() {
 /* ---------- חיבורים ---------- */
 
 $("#btn-new").addEventListener("click", () => openForm("new"));
-$("#btn-import").addEventListener("click", () => openForm("import"));
 $("#btn-queue").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-$("#btn-parse").addEventListener("click", parseImport);
 $("#btn-save").addEventListener("click", (e) => { e.preventDefault(); saveForm().catch((err) => toast(err.message)); });
 $("#btn-subfilters").addEventListener("click", () => {
   $("#subfilters").classList.toggle("open");
