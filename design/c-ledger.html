@@ -1,0 +1,183 @@
+<title>עיצוב ג' — יומן ייצור</title>
+<style>
+  /* ===== יומן ייצור: טופס נייר על שולחן עבודה. הנייר נשאר נייר; השולחן מגיב לערכת הנושא ===== */
+  :root {
+    --desk: #b8b2a4; --desk-edge: #a49d8d;
+    --paper: #fdfcf7; --rule: #c9d3e4; --frame: #2b4c9b; --ink: #1d2c52;
+    --label: #5a6478; --type: #232a38; --stamp: #c23b2e; --ok: #2e6b46; --pencil: #8a8474;
+    --shadow: 0 3px 14px rgba(40, 36, 24, .35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --desk: #2a2721; --desk-edge: #201d18; --shadow: 0 4px 18px rgba(0, 0, 0, .6); }
+  }
+  :root[data-theme="light"] { --desk: #b8b2a4; --desk-edge: #a49d8d; --shadow: 0 3px 14px rgba(40, 36, 24, .35); }
+  :root[data-theme="dark"] { --desk: #2a2721; --desk-edge: #201d18; --shadow: 0 4px 18px rgba(0, 0, 0, .6); }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--desk); }
+  body {
+    font-family: Arial, "Segoe UI", sans-serif; color: var(--ink); font-size: 14px; direction: rtl;
+    background: repeating-linear-gradient(45deg, var(--desk), var(--desk) 14px, var(--desk-edge) 14px, var(--desk-edge) 15px);
+  }
+  .sheet {
+    max-width: 880px; margin: 34px auto; background: var(--paper); box-shadow: var(--shadow);
+    padding: 34px 40px 44px; position: relative;
+  }
+  .sheet + .sheet { margin-top: 26px; }
+
+  /* כותרת טופס */
+  .form-head { display: grid; grid-template-columns: 1fr auto; gap: 4px 20px; border: 2px solid var(--frame); padding: 12px 16px; margin-bottom: 20px; }
+  .form-head h1 { font-size: 19px; font-weight: 800; color: var(--frame); letter-spacing: .01em; }
+  .form-head .unit { font-size: 12px; color: var(--label); }
+  .form-no { text-align: left; font-family: "Courier New", monospace; font-size: 12px; color: var(--frame); align-self: center; }
+  .form-no b { display: block; font-size: 15px; }
+
+  h2 { font-size: 13px; color: var(--frame); letter-spacing: .08em; border-bottom: 2px solid var(--frame); padding-bottom: 4px; margin: 22px 0 0; }
+
+  /* טבלת מרשם — שורות דיו */
+  table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px; }
+  th { font-family: Arial, sans-serif; font-size: 11px; color: var(--label); font-weight: 700; text-align: right; padding: 10px 8px 4px; border-bottom: 1.5px solid var(--frame); }
+  td { font-family: "Courier New", monospace; font-size: 13px; color: var(--type); padding: 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td .small { font-size: 11px; color: var(--pencil); font-family: Arial, sans-serif; }
+  .st { font-family: Arial, sans-serif; font-weight: 700; font-size: 11.5px; white-space: nowrap; }
+  .st.red { color: var(--stamp); } .st.ok { color: var(--ok); } .st.blue { color: var(--frame); }
+  tr.closed td { color: var(--pencil); text-decoration: line-through; text-decoration-color: rgba(138, 132, 116, .5); }
+  tr.closed td .small, tr.closed td .st { text-decoration: none; }
+
+  /* כרטיס נלווה */
+  .traveler { border: 1.5px solid var(--frame); margin-top: 14px; padding: 18px 20px 20px; position: relative; overflow: hidden; }
+  .traveler .t-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .traveler .t-head b { color: var(--frame); font-size: 14px; }
+  .traveler .t-head span { font-family: "Courier New", monospace; font-size: 12px; color: var(--label); }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; }
+  .field { font-size: 11px; color: var(--label); }
+  .field.wide { grid-column: 1 / -1; }
+  .field .v {
+    display: block; font-family: "Courier New", monospace; font-size: 13.5px; color: var(--type);
+    border-bottom: 1px dotted var(--pencil); padding: 3px 2px 2px; min-height: 22px; margin-top: 2px;
+  }
+  .field .v.missing { color: var(--stamp); font-family: Arial, sans-serif; font-weight: 700; }
+
+  /* חותמות */
+  .stamp {
+    position: absolute; top: 46px; left: 26px; transform: rotate(-11deg);
+    border: 3px double var(--stamp); color: var(--stamp); border-radius: 6px;
+    padding: 5px 14px; font-weight: 800; font-size: 16px; letter-spacing: .1em;
+    opacity: .85; background: rgba(194, 59, 46, .04); pointer-events: none;
+  }
+  .stamp.round {
+    border-radius: 50%; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: 12.5px; line-height: 1.35; border-style: solid; border-width: 2.5px;
+    box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4.5px var(--stamp);
+  }
+  .stamp.green { border-color: var(--ok); color: var(--ok); background: rgba(46, 107, 70, .04); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4.5px var(--ok); }
+
+  .sig-row { display: flex; gap: 40px; margin-top: 20px; }
+  .sig { flex: 1; font-size: 11px; color: var(--label); text-align: center; }
+  .sig .line { border-bottom: 1px solid var(--type); height: 30px; margin-bottom: 4px; position: relative; }
+  .sig .scrawl { position: absolute; inset-inline-start: 28%; bottom: 2px; font-family: "Courier New", monospace; font-style: italic; font-size: 16px; color: var(--frame); transform: rotate(-4deg); }
+
+  .foot-note { margin-top: 26px; font-size: 10.5px; color: var(--pencil); border-top: 1px solid var(--rule); padding-top: 8px; display: flex; justify-content: space-between; }
+  @media (max-width: 640px) { .fields { grid-template-columns: 1fr; } .sheet { padding: 22px 18px 30px; } }
+</style>
+
+<div class="sheet">
+  <div class="form-head">
+    <div>
+      <h1>יומן בקשות ייצור</h1>
+      <div class="unit">מדור ייצור · נוהל בקשות ייצור מיום 16/06/26 · מהדורה א'</div>
+    </div>
+    <div class="form-no">טופס<b>יצ‑04</b>שבוע 29/26</div>
+  </div>
+
+  <h2>א. מרשם בקשות פתוחות</h2>
+  <table>
+    <thead><tr><th>מס'</th><th>פרויקט</th><th>נושא הייצור</th><th>מיקום</th><th>בקר / אישור</th><th>תג"ב</th><th>מצב</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1003</td><td>MBaz<div class="small">רשום תחת שועל מעופף · ‎#1114</div></td>
+        <td>מסיט תרמילים — חיתוך וכיפוף פלטות אלומ' × 2</td>
+        <td>מסגריה/דגמים</td><td>ר. פירמן 06.07</td><td>08.07</td>
+        <td><span class="st red">בייצור — חריגה 6 ימ'</span></td>
+      </tr>
+      <tr>
+        <td>1004</td><td>צרצר</td>
+        <td>ג'יג חתיכה לריטיינר 2 × 1</td>
+        <td>מדפסת fortus</td><td>ר. פירמן 12.07</td><td>15.07</td>
+        <td><span class="st red">מעוכבת — חוסרים</span></td>
+      </tr>
+      <tr>
+        <td>1005</td><td>MD</td>
+        <td>תושבות אנטנה — כרסום × 6</td>
+        <td>CNC</td><td>ד. גופמן 13.07</td><td>19.07</td>
+        <td><span class="st blue">מאושרת</span></td>
+      </tr>
+      <tr>
+        <td>1006</td><td>שועל מעופף</td>
+        <td>צביעת מכלול מסיט × 2</td>
+        <td>ספק חיצוני</td><td class="small">ממתין לבקר</td><td>26.07</td>
+        <td><span class="st blue">ממתינה לאישור</span></td>
+      </tr>
+      <tr class="closed">
+        <td>1002</td><td>פולו – MD</td>
+        <td>קדיחת פלטת תיאום וריתוך אלומיניום × 1</td>
+        <td>מסגריה</td><td>ד. גופמן 18.06</td><td>21.06</td>
+        <td><span class="st ok">הושלמה ✓</span></td>
+      </tr>
+      <tr class="closed">
+        <td>1001</td><td>MD</td>
+        <td>גיגים להתקן הטלה × 4</td>
+        <td>תלת־ממד</td><td>דימה 16.06</td><td>22.06</td>
+        <td><span class="st ok">הושלמה ✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="foot-note"><span>נערך: 14.07.26 09:41</span><span>בקשה ללא כלל הפרטים — תעוכב עד השלמתם</span><span>עמוד 1/1</span></div>
+</div>
+
+<div class="sheet">
+  <h2 style="margin-top:0">ב. כרטיס נלווה — בקשה מס' 1003</h2>
+  <div class="traveler">
+    <div class="stamp round">בייצור<br>מסגריה · דגמים<br>08.07.26</div>
+    <div class="t-head"><b>בקשת ייצור</b><span>נתקבלה 08.07.26 · מקור: WhatsApp</span></div>
+    <div class="fields">
+      <div class="field">פרויקט<span class="v">MBaz (רשום תחת שועל מעופף)</span></div>
+      <div class="field">שם ייצור במערכת<span class="v">מסיט תרמילים MBaz · ‎#1114</span></div>
+      <div class="field wide">נושא הייצור<span class="v">חיתוך וכיפוף פלטות אלומיניום לייצור מסיט תרמילים ל-MBaz</span></div>
+      <div class="field">כמות<span class="v">2</span></div>
+      <div class="field">מכניס עבודה<span class="v">גיא דהאן</span></div>
+      <div class="field">מיקום ייצור<span class="v">מסגריה / דגמים</span></div>
+      <div class="field">תג"ב נדרש<span class="v">08.07.26 — בחריגה</span></div>
+      <div class="field wide">הערות מיוחדות<span class="v">אין</span></div>
+    </div>
+    <div class="sig-row">
+      <div class="sig"><div class="line"><span class="scrawl">ר. פירמן</span></div>בקר מאשר · 06.07.26</div>
+      <div class="sig"><div class="line"></div>אחראי ביצוע — חתימה בסיום</div>
+      <div class="sig"><div class="line"></div>נמסר למכניס העבודה</div>
+    </div>
+  </div>
+
+  <h2>ג. כרטיס נלווה — בקשה מס' 1004</h2>
+  <div class="traveler">
+    <div class="stamp">מעוכב — חוסרים</div>
+    <div class="t-head"><b>בקשת ייצור</b><span>נתקבלה 12.07.26 · מקור: WhatsApp (הודעה חלקית)</span></div>
+    <div class="fields">
+      <div class="field">פרויקט<span class="v">צרצר</span></div>
+      <div class="field">שם ייצור במערכת<span class="v missing">— לא נמסר —</span></div>
+      <div class="field wide">נושא הייצור<span class="v">ג'יג חתיכה לריטיינר 2</span></div>
+      <div class="field">כמות<span class="v">חלק בודד</span></div>
+      <div class="field">מכניס עבודה<span class="v">עידו מרון</span></div>
+      <div class="field">מיקום ייצור<span class="v">מדפסת fortus</span></div>
+      <div class="field">תג"ב נדרש<span class="v">15.07.26 — מחר</span></div>
+      <div class="field wide">הערות מיוחדות<span class="v missing">— לא נמסר —</span></div>
+    </div>
+    <div class="sig-row">
+      <div class="sig"><div class="line"><span class="scrawl">ר. פירמן</span></div>בקר מאשר · 12.07.26</div>
+      <div class="sig"><div class="line"></div>אחראי ביצוע — חתימה בסיום</div>
+      <div class="sig"><div class="line"></div>נמסר למכניס העבודה</div>
+    </div>
+  </div>
+
+  <div class="foot-note"><span>יצ‑04 · הכרטיס מלווה את העבודה עד המסירה</span><span>הופק ממערכת בקרת ייצור</span></div>
+</div>

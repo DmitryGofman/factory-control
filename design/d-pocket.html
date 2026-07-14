@@ -1,0 +1,215 @@
+<title>עיצוב ד' — כיס</title>
+<style>
+  /* ===== "כיס": mobile-first — הבקרה גרה איפה שהוואטסאפ גר ===== */
+  :root {
+    --stage: #dfe5df; --frame: #10201c;
+    --app-bg: #eef1ec; --bar: #0e5a50; --bar-text: #eafaf5;
+    --card: #ffffff; --line: #d8ded6; --ink: #16241f; --muted: #647268; --faint: #90a096;
+    --accent: #0e7a6b; --red: #cc4433; --amber: #d98a00; --green: #2f8a53; --purple: #6e5aa8;
+    --rail-red: #cc4433; --rail-amber: #e0a12f; --rail-ok: #a9c0ae;
+    --chip: #e4ece6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --stage: #12171a; --frame: #000;
+      --app-bg: #101915; --bar: #0b3f38; --bar-text: #d7efe8;
+      --card: #182420; --line: #26352e; --ink: #dfe9e2; --muted: #98a89d; --faint: #6c7d72;
+      --accent: #4cbfa8; --red: #ef8070; --amber: #e6ad46; --green: #6fc08a; --purple: #a795d6;
+      --rail-ok: #3d5346; --chip: #21322a;
+    }
+  }
+  :root[data-theme="light"] {
+    --stage: #dfe5df; --frame: #10201c;
+    --app-bg: #eef1ec; --bar: #0e5a50; --bar-text: #eafaf5;
+    --card: #ffffff; --line: #d8ded6; --ink: #16241f; --muted: #647268; --faint: #90a096;
+    --accent: #0e7a6b; --red: #cc4433; --amber: #d98a00; --green: #2f8a53; --purple: #6e5aa8;
+    --rail-red: #cc4433; --rail-amber: #e0a12f; --rail-ok: #a9c0ae; --chip: #e4ece6;
+  }
+  :root[data-theme="dark"] {
+    --stage: #12171a; --frame: #000;
+    --app-bg: #101915; --bar: #0b3f38; --bar-text: #d7efe8;
+    --card: #182420; --line: #26352e; --ink: #dfe9e2; --muted: #98a89d; --faint: #6c7d72;
+    --accent: #4cbfa8; --red: #ef8070; --amber: #e6ad46; --green: #6fc08a; --purple: #a795d6;
+    --rail-red: #ef8070; --rail-amber: #e6ad46; --rail-ok: #3d5346; --chip: #21322a;
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--stage); }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); font-size: 14px; direction: rtl; }
+  .stage { display: flex; gap: 34px; justify-content: center; align-items: flex-start; flex-wrap: wrap; padding: 34px 16px 50px; }
+  .stage-note { width: 100%; text-align: center; color: var(--muted); font-size: 12.5px; margin-top: -6px; }
+
+  /* מסגרת טלפון */
+  .phone {
+    width: 372px; border: 10px solid var(--frame); border-radius: 42px; background: var(--app-bg);
+    overflow: hidden; box-shadow: 0 16px 40px rgba(10, 25, 20, .35); position: relative;
+  }
+  .phone .screen { height: 720px; display: flex; flex-direction: column; overflow: hidden; }
+
+  .appbar { background: var(--bar); color: var(--bar-text); padding: 16px 18px 12px; }
+  .appbar .row1 { display: flex; align-items: center; gap: 10px; }
+  .appbar h1 { font-size: 16.5px; font-weight: 700; flex: 1; }
+  .appbar .icon { opacity: .85; font-size: 15px; }
+  .chips { display: flex; gap: 6px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; }
+  .chip { flex-shrink: 0; border-radius: 999px; padding: 4px 12px; font-size: 12px; background: rgba(255, 255, 255, .13); color: var(--bar-text); }
+  .chip.on { background: var(--bar-text); color: var(--bar); font-weight: 700; }
+
+  .feed { flex: 1; overflow-y: auto; padding: 12px 12px 84px; display: flex; flex-direction: column; gap: 10px; }
+  .day-label { font-size: 11px; color: var(--faint); text-align: center; margin: 4px 0 -2px; }
+
+  .req {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px;
+    border-inline-start: 5px solid var(--rail-ok); position: relative;
+  }
+  .req.hot { border-inline-start-color: var(--rail-red); }
+  .req.warm { border-inline-start-color: var(--rail-amber); }
+  .req .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .req .proj { font-weight: 700; font-size: 14px; }
+  .req .id { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .req .what { font-size: 13px; color: var(--muted); margin: 4px 0 9px; line-height: 1.45; }
+  .req .foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11.5px; }
+  .pill { background: var(--chip); border-radius: 999px; padding: 3px 9px; color: var(--muted); }
+  .count { font-weight: 800; font-size: 12px; }
+  .count.red { color: var(--red); } .count.amber { color: var(--amber); } .count.ok { color: var(--green); }
+  .st-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-inline-end: 4px; vertical-align: 1px; }
+
+  .fab {
+    position: absolute; bottom: 78px; inset-inline-end: 18px; width: 54px; height: 54px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 26px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(14, 90, 80, .45); border: none;
+  }
+  .navbar {
+    position: absolute; bottom: 0; inset-inline: 0; background: var(--card); border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 0 14px;
+  }
+  .nav-item { text-align: center; font-size: 10.5px; color: var(--faint); }
+  .nav-item .ic { font-size: 19px; display: block; margin-bottom: 2px; }
+  .nav-item.on { color: var(--accent); font-weight: 700; }
+
+  /* מסך פירוט */
+  .detail-head { background: var(--bar); color: var(--bar-text); padding: 14px 18px 16px; }
+  .detail-head .back { font-size: 13px; opacity: .8; margin-bottom: 8px; display: block; }
+  .detail-head h2 { font-size: 17px; }
+  .detail-head .sub2 { font-size: 12px; opacity: .8; margin-top: 3px; }
+  .banner { background: var(--red); color: #fff; font-size: 12.5px; padding: 8px 18px; font-weight: 700; }
+  .detail-body { flex: 1; overflow-y: auto; padding: 14px 16px 90px; }
+  .kv { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 6px 14px; }
+  .kv .row { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .kv .row:last-child { border-bottom: none; }
+  .kv .k { color: var(--faint); font-size: 12px; flex-shrink: 0; }
+  .kv .v { text-align: left; }
+  .actions2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .act { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 12px; padding: 11px; font: inherit; font-size: 13.5px; font-weight: 600; }
+  .act.go { background: var(--accent); border-color: var(--accent); color: #fff; grid-column: 1 / -1; }
+  .hist2 { margin-top: 14px; font-size: 12px; color: var(--muted); }
+  .hist2 .h-item { padding: 6px 2px; border-inline-start: 2px solid var(--line); padding-inline-start: 10px; margin-inline-start: 6px; }
+  .hist2 .h-item b { color: var(--ink); }
+
+  @media (max-width: 830px) { .phone { width: min(372px, 94vw); } }
+</style>
+
+<div class="stage">
+
+  <!-- מסך 1: פיד לפי דחיפות -->
+  <div class="phone"><div class="screen">
+    <div class="appbar">
+      <div class="row1"><h1>🏭 בקרת ייצור</h1><span class="icon">🔍</span><span class="icon">⋮</span></div>
+      <div class="chips">
+        <span class="chip on">דחוף · 2</span><span class="chip">פתוחות · 4</span><span class="chip">ממתינות · 1</span><span class="chip">שלי</span><span class="chip">הושלמו</span>
+      </div>
+    </div>
+    <div class="feed">
+      <div class="day-label">לפי דחיפות תג"ב · יום ג' 14.07</div>
+
+      <div class="req hot">
+        <div class="top"><span class="proj">MBaz · מסיט תרמילים</span><span class="id">#1003</span></div>
+        <div class="what">חיתוך וכיפוף פלטות אלומיניום · 2 יח' · מסגריה / דגמים</div>
+        <div class="foot">
+          <span class="count red">⏰ חריגה 6 ימים</span>
+          <span class="pill"><span class="st-dot" style="background:var(--purple)"></span>בייצור</span>
+          <span class="pill">גיא דהאן</span>
+        </div>
+      </div>
+
+      <div class="req warm">
+        <div class="top"><span class="proj">צרצר · ג'יג ריטיינר 2</span><span class="id">#1004</span></div>
+        <div class="what">חלק בודד · מדפסת fortus · ⚠ חסר שם ייצור במערכת</div>
+        <div class="foot">
+          <span class="count amber">תג"ב מחר</span>
+          <span class="pill"><span class="st-dot" style="background:var(--red)"></span>מעוכבת</span>
+          <span class="pill">עידו מרון</span>
+        </div>
+      </div>
+
+      <div class="req">
+        <div class="top"><span class="proj">MD · תושבות אנטנה</span><span class="id">#1005</span></div>
+        <div class="what">כרסום CNC · 6 יח' · אושר ע"י דימה גופמן 13.07</div>
+        <div class="foot">
+          <span class="count ok">עוד 5 ימים</span>
+          <span class="pill"><span class="st-dot" style="background:var(--accent)"></span>מאושרת</span>
+        </div>
+      </div>
+
+      <div class="req">
+        <div class="top"><span class="proj">שועל מעופף · צביעת מסיט</span><span class="id">#1006</span></div>
+        <div class="what">ספק חיצוני · 2 יח' · נשלח לאישור רונן</div>
+        <div class="foot">
+          <span class="count ok">עוד 12 ימים</span>
+          <span class="pill"><span class="st-dot" style="background:var(--amber)"></span>ממתינה לאישור</span>
+        </div>
+      </div>
+
+      <div class="day-label">הושלמו החודש</div>
+      <div class="req" style="opacity:.62">
+        <div class="top"><span class="proj">פולו – MD · פלטת תיאום</span><span class="id">#1002</span></div>
+        <div class="foot"><span class="count ok">✔ נסגרה 21.06</span><span class="pill">מסגריה</span></div>
+      </div>
+    </div>
+    <button class="fab" title="בקשה חדשה">＋</button>
+    <div class="navbar">
+      <div class="nav-item on"><span class="ic">◉</span>תור</div>
+      <div class="nav-item"><span class="ic">📋</span>ייבוא צ'אט</div>
+      <div class="nav-item"><span class="ic">📊</span>מדדים</div>
+      <div class="nav-item"><span class="ic">⚙</span>הגדרות</div>
+    </div>
+  </div></div>
+
+  <!-- מסך 2: פירוט בקשה -->
+  <div class="phone"><div class="screen">
+    <div class="detail-head">
+      <span class="back">→ חזרה לתור</span>
+      <h2>#1003 · מסיט תרמילים MBaz</h2>
+      <div class="sub2">רשום תחת שועל מעופף · מזהה מערכת ‎#1114</div>
+    </div>
+    <div class="banner">⏰ חריגת תג"ב — 6 ימים. תג"ב נדרש: 8.7.26</div>
+    <div class="detail-body">
+      <div class="kv">
+        <div class="row"><span class="k">סטטוס</span><span class="v"><span class="st-dot" style="background:var(--purple)"></span>בייצור</span></div>
+        <div class="row"><span class="k">נושא הייצור</span><span class="v">חיתוך וכיפוף פלטות אלומיניום לייצור מסיט תרמילים</span></div>
+        <div class="row"><span class="k">כמות</span><span class="v">2</span></div>
+        <div class="row"><span class="k">מכניס עבודה</span><span class="v">גיא דהאן</span></div>
+        <div class="row"><span class="k">בקר מאשר</span><span class="v">רונן פירמן · 6.7.26</span></div>
+        <div class="row"><span class="k">מיקום ייצור</span><span class="v">מסגריה / דגמים</span></div>
+        <div class="row"><span class="k">הערות</span><span class="v">אין</span></div>
+      </div>
+      <div class="actions2">
+        <button class="act go">✔ סמן הושלמה</button>
+        <button class="act">📋 העתק כ-WhatsApp</button>
+        <button class="act">✏️ עריכה</button>
+      </div>
+      <div class="hist2">
+        <div class="h-item"><b>08.07</b> · נקלטה מ-WhatsApp (רונן פירמן)</div>
+        <div class="h-item"><b>08.07</b> · מאושרת → בייצור</div>
+        <div class="h-item"><b>14.07</b> · תזכורת חריגה נשלחה למכניס העבודה</div>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="nav-item on"><span class="ic">◉</span>תור</div>
+      <div class="nav-item"><span class="ic">📋</span>ייבוא צ'אט</div>
+      <div class="nav-item"><span class="ic">📊</span>מדדים</div>
+      <div class="nav-item"><span class="ic">⚙</span>הגדרות</div>
+    </div>
+  </div></div>
+
+  <div class="stage-note">מסך התור (ימין) ומסך פירוט בקשה (שמאל) · העיצוב בנוי קודם לטלפון — כי שם ההודעות ממילא נמצאות</div>
+</div>

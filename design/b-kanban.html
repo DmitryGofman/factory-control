@@ -1,0 +1,173 @@
+<title>עיצוב ב' — לוח רצפה</title>
+<style>
+  /* ===== לוח מגנטים של רצפת ייצור: קנבן לפי מחזור חיים ===== */
+  :root {
+    --ground: #eef0ea; --board: #e3e7dd; --card: #ffffff; --line: #cdd3c4;
+    --ink: #22301f; --muted: #6b7a63; --faint: #93a08a;
+    --primary: #22703f; --red: #c94438; --amber: #d98a00; --blue: #33628f; --purple: #6f5aa8;
+    --chip-red: #fbe9e7; --chip-amber: #faf0dc; --chip-green: #e5f2e6; --on-primary: #ffffff;
+    --shadow: 0 1px 2px rgba(34, 48, 31, .14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #171c14; --board: #1e241a; --card: #262e21; --line: #38412f;
+      --ink: #e4e9dd; --muted: #a3ad97; --faint: #78826c;
+      --primary: #67c286; --red: #ef8377; --amber: #e8ab3f; --blue: #85aed3; --purple: #ab97d8;
+      --chip-red: #47251f; --chip-amber: #453416; --chip-green: #23381f; --on-primary: #10190d;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #eef0ea; --board: #e3e7dd; --card: #ffffff; --line: #cdd3c4;
+    --ink: #22301f; --muted: #6b7a63; --faint: #93a08a;
+    --primary: #22703f; --red: #c94438; --amber: #d98a00; --blue: #33628f; --purple: #6f5aa8;
+    --chip-red: #fbe9e7; --chip-amber: #faf0dc; --chip-green: #e5f2e6; --on-primary: #ffffff;
+    --shadow: 0 1px 2px rgba(34, 48, 31, .14);
+  }
+  :root[data-theme="dark"] {
+    --ground: #171c14; --board: #1e241a; --card: #262e21; --line: #38412f;
+    --ink: #e4e9dd; --muted: #a3ad97; --faint: #78826c;
+    --primary: #67c286; --red: #ef8377; --amber: #e8ab3f; --blue: #85aed3; --purple: #ab97d8;
+    --chip-red: #47251f; --chip-amber: #453416; --chip-green: #23381f; --on-primary: #10190d;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--ground); }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); font-size: 14px; direction: rtl; }
+  .wrap { max-width: 1340px; margin: 0 auto; padding: 20px 22px 44px; }
+
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  header h1 { font-size: 20px; font-weight: 800; }
+  header h1::before { content: "▦ "; color: var(--primary); }
+  .sub { color: var(--muted); font-size: 13px; }
+  .actions { margin-inline-start: auto; display: flex; gap: 8px; }
+  .btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 6px; padding: 7px 14px; font: inherit; font-size: 13.5px; cursor: pointer; box-shadow: var(--shadow); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+
+  /* הלוח */
+  .board-scroll { overflow-x: auto; padding-bottom: 8px; }
+  .board { display: grid; grid-template-columns: repeat(5, minmax(232px, 1fr)); gap: 12px; min-width: 1180px; background: var(--board); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .col-head { display: flex; align-items: center; gap: 8px; padding: 4px 6px 10px; font-weight: 700; font-size: 13.5px; }
+  .col-head .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .col-head .n { margin-inline-start: auto; font-weight: 400; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .col { display: flex; flex-direction: column; }
+  .cards { display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: var(--shadow); padding: 10px 12px 11px; position: relative; cursor: grab;
+    border-top: 4px solid var(--line);
+  }
+  .card:hover { transform: translateY(-1px); }
+  .card.sev-red { border-top-color: var(--red); }
+  .card.sev-amber { border-top-color: var(--amber); }
+  .card.sev-ok { border-top-color: var(--primary); }
+  .card .id { font-size: 11.5px; color: var(--faint); font-variant-numeric: tabular-nums; float: left; }
+  .card .proj { font-weight: 700; font-size: 13.5px; margin-bottom: 3px; }
+  .card .what { font-size: 13px; color: var(--ink); margin-bottom: 8px; line-height: 1.45; }
+  .card .meta { display: flex; flex-wrap: wrap; gap: 5px; font-size: 11.5px; color: var(--muted); }
+  .tag { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; background: transparent; }
+  .tag.due-red { background: var(--chip-red); color: var(--red); border-color: transparent; font-weight: 700; }
+  .tag.due-amber { background: var(--chip-amber); color: var(--amber); border-color: transparent; font-weight: 700; }
+  .tag.done { background: var(--chip-green); color: var(--primary); border-color: transparent; }
+  .warnline { margin-top: 8px; font-size: 11.5px; color: var(--red); border-top: 1px dashed var(--line); padding-top: 6px; }
+  .quote { margin-top: 8px; font-size: 11.5px; color: var(--muted); font-style: italic; border-inline-start: 3px solid var(--line); padding-inline-start: 8px; }
+
+  .ghost { border: 2px dashed var(--line); border-radius: 8px; padding: 12px; text-align: center; color: var(--faint); font-size: 12.5px; background: transparent; }
+
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: 2px; margin-inline-end: 6px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>לוח רצפת ייצור</h1>
+    <span class="sub">גרירת כרטיס = שינוי סטטוס · יום ג' 14.07.26</span>
+    <div class="actions">
+      <button class="btn">📋 ייבוא מ-WhatsApp</button>
+      <button class="btn primary">＋ בקשה חדשה</button>
+    </div>
+  </header>
+
+  <div class="board-scroll">
+  <div class="board">
+
+    <div class="col">
+      <div class="col-head"><span class="dot" style="background:var(--red)"></span>מעוכבות — חוסרים<span class="n">1</span></div>
+      <div class="cards">
+        <div class="card sev-amber">
+          <span class="id">#1004</span>
+          <div class="proj">צרצר</div>
+          <div class="what">ג'יג חתיכה לריטיינר 2 · חלק בודד</div>
+          <div class="meta"><span class="tag">מדפסת fortus</span><span class="tag due-amber">תג"ב מחר 15.07</span><span class="tag">עידו מרון</span></div>
+          <div class="warnline">⚠ חסר: שם ייצור במערכת — לא ייכנס לתור עד השלמה</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-head"><span class="dot" style="background:var(--amber)"></span>ממתינות לאישור<span class="n">1</span></div>
+      <div class="cards">
+        <div class="card">
+          <span class="id">#1006</span>
+          <div class="proj">שועל מעופף</div>
+          <div class="what">צביעת מכלול מסיט — ספק חיצוני</div>
+          <div class="meta"><span class="tag">ספק חיצוני</span><span class="tag">תג"ב 26.07</span><span class="tag">גיא דהאן</span></div>
+          <div class="quote">"מאשר את הייצור?" — נשלח לבקר לפני יומיים</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-head"><span class="dot" style="background:var(--blue)"></span>מאושרות<span class="n">1</span></div>
+      <div class="cards">
+        <div class="card sev-ok">
+          <span class="id">#1005</span>
+          <div class="proj">MD</div>
+          <div class="what">תושבות אנטנה — כרסום CNC · 6 יח'</div>
+          <div class="meta"><span class="tag">CNC</span><span class="tag">תג"ב 19.07</span><span class="tag">בקר: דימה גופמן ✓</span></div>
+        </div>
+        <div class="ghost">גררו לכאן כרטיס שאושר</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-head"><span class="dot" style="background:var(--purple)"></span>בייצור<span class="n">1</span></div>
+      <div class="cards">
+        <div class="card sev-red">
+          <span class="id">#1003 · #1114</span>
+          <div class="proj">MBaz <span style="font-weight:400;color:var(--faint)">(שועל מעופף)</span></div>
+          <div class="what">מסיט תרמילים — חיתוך וכיפוף פלטות אלומיניום · 2 יח'</div>
+          <div class="meta"><span class="tag">מסגריה / דגמים</span><span class="tag due-red">חריגה 6 ימים</span><span class="tag">גיא דהאן</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-head"><span class="dot" style="background:var(--primary)"></span>הושלמו<span class="n">2</span></div>
+      <div class="cards">
+        <div class="card">
+          <span class="id">#1002</span>
+          <div class="proj">פולו – MD</div>
+          <div class="what">קדיחת פלטת תיאום וריתוך אלומיניום</div>
+          <div class="meta"><span class="tag done">✔ נסגרה 21.06</span><span class="tag">מסגריה</span></div>
+        </div>
+        <div class="card">
+          <span class="id">#1001</span>
+          <div class="proj">MD</div>
+          <div class="what">גיגים להתקן הטלה — תלת־ממד · 4 יח'</div>
+          <div class="meta"><span class="tag done">✔ נסגרה 22.06</span><span class="tag">תלת־ממד</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--red)"></i>פס אדום — חריגת תג"ב</span>
+    <span><i style="background:var(--amber)"></i>פס כתום — תג"ב ביומיים הקרובים</span>
+    <span><i style="background:var(--primary)"></i>פס ירוק — בלו"ז</span>
+  </div>
+</div>

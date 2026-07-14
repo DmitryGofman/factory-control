@@ -1,0 +1,210 @@
+<title>עיצוב א' — חמ"ל ייצור</title>
+<style>
+  /* ===== חדר בקרה: התחייבות מכוונת לעולם כהה, בשני ערכות הנושא ===== */
+  :root {
+    --ground: #0a111e; --panel: #101b2d; --panel-2: #0d1626;
+    --line: #22314b; --line-soft: #182439;
+    --text: #dbe6f5; --muted: #7e90ab; --faint: #55647e;
+    --amber: #ffb020; --red: #ff5d5d; --green: #3dd68c; --blue: #5aa7ff; --purple: #b18cff;
+    --mono: "Consolas", "Courier New", monospace;
+    --sans: "Segoe UI", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--ground); }
+  body { font-family: var(--sans); color: var(--text); font-size: 14px; direction: rtl; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 22px 40px; }
+
+  /* פס עליון */
+  .topbar {
+    display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+    padding: 16px 0 14px; border-bottom: 1px solid var(--line);
+  }
+  .topbar h1 { font-size: 17px; font-weight: 700; letter-spacing: .02em; }
+  .topbar h1 b { color: var(--amber); font-weight: 700; }
+  .topbar .sys { color: var(--faint); font-family: var(--mono); font-size: 12px; }
+  .topbar .clock { margin-inline-start: auto; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .live { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-inline-end: 6px; animation: blink 2.4s infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .live { animation: none; } }
+
+  /* קיר מדדים */
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 18px 0; }
+  .kpi {
+    background: var(--panel); border: 1px solid var(--line-soft); border-radius: 6px;
+    padding: 12px 14px 10px; position: relative; overflow: hidden;
+  }
+  .kpi b { display: block; font-family: var(--mono); font-size: 34px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 12px; color: var(--muted); }
+  .kpi.alert b { color: var(--red); } .kpi.warn b { color: var(--amber); }
+  .kpi.ok b { color: var(--green); } .kpi.info b { color: var(--blue); }
+  .kpi.alert::after { content: ""; position: absolute; inset-inline-start: 0; top: 0; bottom: 0; width: 3px; background: var(--red); }
+
+  /* פריסה ראשית */
+  .cols { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
+  .board, .side-card {
+    background: var(--panel); border: 1px solid var(--line-soft); border-radius: 6px; overflow: hidden;
+  }
+  .board-head, .side-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; border-bottom: 1px solid var(--line);
+    font-size: 12px; color: var(--muted); letter-spacing: .06em;
+  }
+  .board-head .count { font-family: var(--mono); color: var(--faint); }
+
+  table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 13.5px; }
+  th, td { font-family: inherit; font-size: inherit; text-align: right; padding: 9px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th { color: var(--faint); font-weight: 400; font-size: 11.5px; letter-spacing: .05em; background: var(--panel-2); }
+  tr:last-child td { border-bottom: none; }
+  td.num, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  td .sub { color: var(--faint); font-size: 11.5px; margin-top: 2px; }
+  tr[data-sev="red"] td:first-child { box-shadow: inset 4px 0 0 var(--red); }
+  tr[data-sev="amber"] td:first-child { box-shadow: inset 4px 0 0 var(--amber); }
+  tr[data-sev="none"] td { opacity: .55; }
+
+  .lamp { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 7px; vertical-align: 1px; }
+  .lamp.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .lamp.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .lamp.blue { background: var(--blue); } .lamp.purple { background: var(--purple); }
+  .lamp.green { background: var(--green); } .lamp.grey { background: var(--faint); }
+
+  .due { font-family: var(--mono); }
+  .due .flag { display: block; font-size: 11px; margin-top: 2px; }
+  .due .flag.red { color: var(--red); } .due .flag.amber { color: var(--amber); }
+
+  /* פאנל צד: חריגות + עומס */
+  .side { display: grid; gap: 14px; }
+  .exc { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); }
+  .exc:last-child { border-bottom: none; }
+  .exc .t { font-size: 13px; margin-bottom: 6px; }
+  .exc .t b { color: var(--red); font-family: var(--mono); }
+  .meter { height: 6px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+  .meter i { display: block; height: 100%; border-radius: 3px; }
+  .load-row { display: grid; grid-template-columns: 110px 1fr 24px; gap: 10px; align-items: center; padding: 8px 14px; font-size: 12.5px; color: var(--muted); }
+  .load-row .mono { text-align: left; color: var(--text); }
+
+  .foot { margin-top: 16px; font-size: 11.5px; color: var(--faint); font-family: var(--mono); display: flex; gap: 22px; flex-wrap: wrap; }
+  @media (max-width: 960px) { .cols { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(3, 1fr); } }
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <h1><b>◤</b> חמ"ל ייצור — מדור</h1>
+    <span class="sys">FCTRL/v1 · תצוגת משמרת</span>
+    <span class="clock"><span class="live"></span>יום ג' 14.07.26 · 09:41</span>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi info"><b>4</b><span>בקשות פתוחות</span></div>
+    <div class="kpi alert"><b>1</b><span>חריגת תג"ב פעילה</span></div>
+    <div class="kpi warn"><b>1</b><span>תג"ב עד מחר</span></div>
+    <div class="kpi warn"><b>1</b><span>ממתינות לאישור בקר</span></div>
+    <div class="kpi alert"><b>1</b><span>מעוכבות — חוסרים</span></div>
+    <div class="kpi ok"><b>2</b><span>הושלמו החודש</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="board">
+      <div class="board-head"><span>תור עבודות · ממוין לפי תג"ב</span><span class="count">6 רשומות</span></div>
+      <table>
+        <thead><tr>
+          <th>מס'</th><th>פרויקט / נושא</th><th>כמות</th><th>מיקום</th><th>בקר</th><th>תג"ב</th><th>מצב</th>
+        </tr></thead>
+        <tbody>
+          <tr data-sev="red">
+            <td class="num">1003<div class="sub">#1114</div></td>
+            <td>MBaz<div class="sub">מסיט תרמילים — חיתוך וכיפוף פלטות אלומיניום · רשום תחת שועל מעופף</div></td>
+            <td class="num">2</td>
+            <td>מסגריה / דגמים</td>
+            <td>רונן פירמן<div class="sub num">06.07</div></td>
+            <td class="due">08.07<span class="flag red">▲ חריגה 6 ימ'</span></td>
+            <td><span class="lamp purple"></span>בייצור</td>
+          </tr>
+          <tr data-sev="amber">
+            <td class="num">1004</td>
+            <td>צרצר<div class="sub">ג'יג חתיכה לריטיינר 2 · חסר: שם ייצור במערכת</div></td>
+            <td class="num">1</td>
+            <td>מדפסת fortus</td>
+            <td>רונן פירמן<div class="sub num">12.07</div></td>
+            <td class="due">15.07<span class="flag amber">◈ נותר יום</span></td>
+            <td><span class="lamp red"></span>מעוכבת</td>
+          </tr>
+          <tr>
+            <td class="num">1005</td>
+            <td>MD<div class="sub">תושבות אנטנה — כרסום CNC</div></td>
+            <td class="num">6</td>
+            <td>CNC</td>
+            <td>דימה גופמן<div class="sub num">13.07</div></td>
+            <td class="due">19.07</td>
+            <td><span class="lamp blue"></span>מאושרת</td>
+          </tr>
+          <tr>
+            <td class="num">1006</td>
+            <td>שועל מעופף<div class="sub">צביעת מכלול מסיט — ספק חיצוני</div></td>
+            <td class="num">2</td>
+            <td>ספק חיצוני</td>
+            <td>— <div class="sub">טרם אושר</div></td>
+            <td class="due">26.07</td>
+            <td><span class="lamp amber"></span>ממתינה לאישור</td>
+          </tr>
+          <tr data-sev="none">
+            <td class="num">1002</td>
+            <td>פולו – MD<div class="sub">קדיחת פלטת תיאום וריתוך אלומיניום</div></td>
+            <td class="num">1</td>
+            <td>מסגריה</td>
+            <td>דימה גופמן<div class="sub num">18.06</div></td>
+            <td class="due">21.06</td>
+            <td><span class="lamp green"></span>הושלמה</td>
+          </tr>
+          <tr data-sev="none">
+            <td class="num">1001</td>
+            <td>MD<div class="sub">גיגים להתקן הטלה — הדפסה תלת־ממד</div></td>
+            <td class="num">4</td>
+            <td>תלת־ממד</td>
+            <td>דימה<div class="sub num">16.06</div></td>
+            <td class="due">22.06</td>
+            <td><span class="lamp green"></span>הושלמה</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="side">
+      <div class="side-card">
+        <div class="side-head"><span>לוח חריגות</span><span class="mono" style="color:var(--red)">2</span></div>
+        <div class="exc">
+          <div class="t">‎#1003 מסיט תרמילים MBaz — <b>‎-6 ימים</b></div>
+          <div class="meter"><i style="width:100%;background:var(--red)"></i></div>
+        </div>
+        <div class="exc">
+          <div class="t">‎#1004 ג'יג ריטיינר 2 (צרצר) — <b style="color:var(--amber)">מעוכבת + תג"ב מחר</b></div>
+          <div class="meter"><i style="width:82%;background:var(--amber)"></i></div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-head"><span>עומס לפי מיקום ייצור</span><span class="mono">פתוחות</span></div>
+        <div class="load-row"><span>מסגריה / דגמים</span><div class="meter"><i style="width:66%;background:var(--blue)"></i></div><span class="mono">2</span></div>
+        <div class="load-row"><span>מדפסת fortus</span><div class="meter"><i style="width:33%;background:var(--blue)"></i></div><span class="mono">1</span></div>
+        <div class="load-row"><span>CNC</span><div class="meter"><i style="width:33%;background:var(--blue)"></i></div><span class="mono">1</span></div>
+        <div class="load-row"><span>ספק חיצוני</span><div class="meter"><i style="width:33%;background:var(--blue)"></i></div><span class="mono">1</span></div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-head"><span>מקרא מצבים</span></div>
+        <div style="padding:10px 14px; display:grid; gap:7px; font-size:12.5px; color:var(--muted)">
+          <span><span class="lamp red"></span>מעוכבת — חוסרים בנתונים</span>
+          <span><span class="lamp amber"></span>ממתינה לאישור בקר</span>
+          <span><span class="lamp blue"></span>מאושרת לביצוע</span>
+          <span><span class="lamp purple"></span>בייצור</span>
+          <span><span class="lamp green"></span>הושלמה</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>DB: factory.db · WAL</span>
+    <span>עדכון אחרון: 09:41:16</span>
+    <span>נוהל בקשות ייצור 16/06/26 — בתוקף</span>
+  </div>
+</div>
