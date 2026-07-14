@@ -108,7 +108,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px s
   position: fixed; bottom: 0; inset-inline: 0; z-index: 6;
   background: var(--panel); border-top: 1px solid var(--line);
 }
-.navbar .inner { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); padding: 7px 0 12px; }
+.navbar .inner { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); padding: 7px 0 12px; }
 .nav-item { background: none; border: none; text-align: center; font-size: 10.5px; color: var(--faint); cursor: pointer; }
 .nav-item .ic { font-size: 20px; display: block; margin-bottom: 2px; }
 .nav-item.primary .ic {
@@ -197,3 +197,25 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
   .sheet-head { border-radius: 16px 16px 0 0; }
 }
 @media (max-width: 480px) { .fgrid { grid-template-columns: 1fr; } }
+
+/* ===== מסך התחברות ===== */
+.login-wrap { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 26px 24px 24px; width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.login-card h1 { font-size: 18px; text-align: center; margin-bottom: 4px; }
+.login-card h1 b { color: var(--amber); }
+.login-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--panel-2); border-radius: 10px; padding: 4px; }
+.login-tabs button {
+  border: none; background: none; color: var(--muted); padding: 8px;
+  border-radius: 8px; font-size: 14px; cursor: pointer;
+}
+.login-tabs button.on { background: var(--amber); color: #1a1204; font-weight: 700; }
+.login-card label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; color: var(--muted); }
+.login-error { color: var(--red); font-size: 13px; text-align: center; }
+
+/* סרגל משתמש בפס העליון */
+.userchip { font-size: 11.5px; color: var(--faint); background: none; border: none; cursor: pointer; padding: 0; }
+.userchip:hover { color: var(--muted); }
