@@ -2,78 +2,73 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101b2d">
 <title>בקרת בקשות ייצור</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header>
-  <div class="header-inner">
-    <h1>🏭 בקרת בקשות ייצור</h1>
-    <div class="header-actions">
-      <button class="btn btn-secondary" id="btn-import">📋 ייבוא מ-WhatsApp</button>
-      <button class="btn btn-primary" id="btn-new">＋ בקשה חדשה</button>
+<div class="shell">
+
+  <header class="appbar">
+    <div class="row1">
+      <h1><b>◤</b> בקרת ייצור — מדור</h1>
+      <span class="clock"><span class="live"></span><span id="clock-date"></span></span>
     </div>
+    <div class="chips" id="chips"></div>
+    <div class="searchrow">
+      <input type="search" id="f-search" placeholder="חיפוש: פרויקט, מבקש, נושא, #מזהה...">
+      <button class="iconbtn" id="btn-subfilters" title="סינון לפי פרויקט ומיקום">⚙</button>
+    </div>
+    <div class="subfilters" id="subfilters">
+      <select id="f-project"><option value="">כל הפרויקטים</option></select>
+      <select id="f-location"><option value="">כל מיקומי הייצור</option></select>
+    </div>
+  </header>
+
+  <main class="feed" id="feed"></main>
+  <div class="empty" id="empty" hidden>אין בקשות להצגה</div>
+
+</div>
+
+<nav class="navbar">
+  <div class="inner">
+    <button class="nav-item" id="btn-import"><span class="ic">📋</span>ייבוא מ-WhatsApp</button>
+    <button class="nav-item primary" id="btn-new"><span class="ic">＋</span>בקשה חדשה</button>
+    <button class="nav-item on" id="btn-queue"><span class="ic">◉</span>תור עבודות</button>
   </div>
-</header>
+</nav>
 
-<main>
-  <section class="stats" id="stats"></section>
-
-  <section class="filters">
-    <input type="search" id="f-search" placeholder="חיפוש חופשי: פרויקט, מבקש, נושא, #מזהה...">
-    <select id="f-status"><option value="">כל הסטטוסים</option></select>
-    <select id="f-project"><option value="">כל הפרויקטים</option></select>
-    <select id="f-location"><option value="">כל מיקומי הייצור</option></select>
-    <label class="chk"><input type="checkbox" id="f-open" checked> פתוחות בלבד</label>
-  </section>
-
-  <section class="table-wrap">
-    <table id="tbl">
-      <thead><tr>
-        <th>#</th><th>פרויקט</th><th>נושא הייצור</th><th>כמות</th>
-        <th>מכניס עבודה</th><th>בקר</th><th>מיקום</th><th>תג"ב</th><th>סטטוס</th>
-      </tr></thead>
-      <tbody id="tbl-body"></tbody>
-    </table>
-    <div class="empty" id="empty" hidden>אין בקשות להצגה</div>
-  </section>
-</main>
-
-<!-- מודאל פרטי בקשה -->
-<div class="modal-back" id="modal-detail" hidden>
-  <div class="modal">
-    <div class="modal-head">
+<!-- גיליון פרטי בקשה -->
+<div class="sheet-back" id="modal-detail" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
       <h2 id="d-title"></h2>
       <button class="btn-close" data-close>&times;</button>
     </div>
-    <div class="modal-body" id="d-body"></div>
-    <div class="modal-foot">
-      <button class="btn btn-secondary" id="d-copy">📋 העתק כ-WhatsApp</button>
-      <button class="btn btn-secondary" id="d-edit">✏️ עריכה</button>
-      <span class="spacer"></span>
-      <span id="d-status-btns"></span>
-    </div>
+    <div id="d-banner"></div>
+    <div class="sheet-body" id="d-body"></div>
+    <div class="sheet-foot" id="d-foot"></div>
   </div>
 </div>
 
-<!-- מודאל טופס (חדשה / עריכה / ייבוא) -->
-<div class="modal-back" id="modal-form" hidden>
-  <div class="modal">
-    <div class="modal-head">
+<!-- גיליון טופס (חדשה / עריכה / ייבוא) -->
+<div class="sheet-back" id="modal-form" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
       <h2 id="form-title">בקשה חדשה</h2>
       <button class="btn-close" data-close>&times;</button>
     </div>
-    <div class="modal-body">
+    <div class="sheet-body">
       <div id="import-zone" hidden>
-        <label>הדבק כאן את הודעת ה-WhatsApp:</label>
+        <label style="font-size:12px;color:var(--muted)">הדבק כאן את הודעת ה-WhatsApp:</label>
         <textarea id="import-text" rows="8" placeholder="*בקשת ייצור*&#10;פרויקט:&#10;* ..."></textarea>
-        <button class="btn btn-primary" id="btn-parse">פרק לשדות ⬇</button>
+        <button class="btn primary" id="btn-parse">פרק לשדות ⬇</button>
         <div id="parse-result" class="parse-note"></div>
         <hr>
       </div>
       <form id="req-form">
-        <div class="grid">
+        <div class="fgrid">
           <label>פרויקט *<input name="project"></label>
           <label>רשום תחת (כינוי)<input name="project_alias"></label>
           <label class="wide">נושא הייצור *<textarea name="subject" rows="2"></textarea></label>
@@ -87,14 +82,14 @@
           <label>מזהה חיצוני (#)<input name="external_id"></label>
           <label>עדיפות<select name="priority"><option>רגיל</option><option>דחוף</option><option>מיידי</option></select></label>
           <label class="wide">הערות מיוחדות<textarea name="notes" rows="2"></textarea></label>
-          <label>שם המעדכן (מי מזין כרגע)<input name="actor" id="actor-input"></label>
+          <label class="wide">שם המעדכן (מי מזין כרגע)<input name="actor" id="actor-input"></label>
         </div>
         <div class="missing-note" id="form-missing"></div>
       </form>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" id="btn-save">שמירה</button>
-      <button class="btn btn-secondary" data-close>ביטול</button>
+    <div class="sheet-foot">
+      <button class="btn primary wide" id="btn-save">שמירה</button>
+      <button class="btn wide" data-close>ביטול</button>
     </div>
   </div>
 </div>

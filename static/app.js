@@ -1,8 +1,12 @@
-/* בקרת בקשות ייצור — לוגיקת צד לקוח */
+/* בקרת בקשות ייצור — mobile-first, ערכת "חמ"ל" */
 "use strict";
 
 const $ = (sel) => document.querySelector(sel);
 const OPEN_STATUSES = ["מעוכבת", "ממתינה לאישור", "מאושרת", "בייצור"];
+const LAMP = {
+  "מעוכבת": "red", "ממתינה לאישור": "amber", "מאושרת": "blue",
+  "בייצור": "purple", "הושלמה": "green", "נדחתה": "grey", "בוטלה": "grey",
+};
 const NEXT_ACTIONS = {
   "מעוכבת": ["ממתינה לאישור", "בוטלה"],
   "ממתינה לאישור": ["מאושרת", "נדחתה"],
@@ -11,7 +15,7 @@ const NEXT_ACTIONS = {
   "הושלמה": [], "נדחתה": ["ממתינה לאישור"], "בוטלה": ["ממתינה לאישור"],
 };
 
-let state = { requests: [], stats: null, current: null, editId: null };
+let state = { requests: [], stats: null, current: null, editId: null, chip: "open" };
 
 async function api(path, opts) {
   const res = await fetch(path, opts);
@@ -39,13 +43,13 @@ function toast(msg) {
   el._t = setTimeout(() => (el.hidden = true), 2500);
 }
 
-/* ---------- טעינה ורינדור ---------- */
+/* ---------- טעינה ---------- */
 
 async function refresh() {
   const params = new URLSearchParams();
   const q = $("#f-search").value.trim();
   if (q) params.set("q", q);
-  for (const [id, key] of [["#f-status", "status"], ["#f-project", "project"], ["#f-location", "location"]]) {
+  for (const [id, key] of [["#f-project", "project"], ["#f-location", "location"]]) {
     const v = $(id).value;
     if (v) params.set(key, v);
   }
@@ -55,26 +59,31 @@ async function refresh() {
   ]);
   state.requests = reqs;
   state.stats = st;
-  renderStats();
+  renderChips();
   renderFilters();
-  renderTable();
+  renderFeed();
 }
 
-function renderStats() {
+/* ---------- צ'יפים: מדדים + מסנן במחווה אחת ---------- */
+
+const CHIPS = [
+  { key: "open", label: "פתוחות", stat: "open", cls: "" },
+  { key: "overdue", label: "חורגות תג\"ב", stat: "overdue", cls: "alert" },
+  { key: "מעוכבת", label: "מעוכבות", stat: "delayed", cls: "alert" },
+  { key: "ממתינה לאישור", label: "ממתינות", stat: "awaiting", cls: "warn" },
+  { key: "due_soon", label: "תג\"ב קרוב", stat: "due_soon", cls: "warn" },
+  { key: "הושלמה", label: "הושלמו", stat: "completed_30d", cls: "ok" },
+  { key: "all", label: "הכל", stat: null, cls: "" },
+];
+
+function renderChips() {
   const s = state.stats;
-  $("#stats").innerHTML = `
-    <div class="stat" data-filter=""><b>${s.open}</b><span>בקשות פתוחות</span></div>
-    <div class="stat warn" data-filter="ממתינה לאישור"><b>${s.awaiting}</b><span>ממתינות לאישור בקר</span></div>
-    <div class="stat alert" data-filter="מעוכבת"><b>${s.delayed}</b><span>מעוכבות — חוסרים</span></div>
-    <div class="stat alert" data-overdue="1"><b>${s.overdue}</b><span>חורגות מתג"ב</span></div>
-    <div class="stat warn"><b>${s.due_soon}</b><span>תג"ב ביומיים הקרובים</span></div>
-    <div class="stat ok" data-filter="הושלמה"><b>${s.completed_30d}</b><span>הושלמו ב-30 יום</span></div>`;
-  document.querySelectorAll(".stat[data-filter]").forEach((el) =>
-    el.addEventListener("click", () => {
-      $("#f-status").value = el.dataset.filter;
-      $("#f-open").checked = el.dataset.filter !== "הושלמה";
-      refresh();
-    }));
+  $("#chips").innerHTML = CHIPS.map((c) =>
+    `<button class="chip ${c.cls} ${state.chip === c.key ? "on" : ""}" data-chip="${c.key}">
+      ${c.label}${c.stat != null ? `<b>${s[c.stat]}</b>` : ""}
+    </button>`).join("");
+  document.querySelectorAll(".chip").forEach((el) =>
+    el.addEventListener("click", () => { state.chip = el.dataset.chip; renderChips(); renderFeed(); }));
 }
 
 function fillSelect(sel, values, current) {
@@ -91,40 +100,67 @@ function fillSelect(sel, values, current) {
 
 function renderFilters() {
   const s = state.stats;
-  fillSelect($("#f-status"), s.statuses, $("#f-status").value);
   fillSelect($("#f-project"), s.projects, $("#f-project").value);
   fillSelect($("#f-location"), s.locations, $("#f-location").value);
   $("#loc-list").innerHTML = s.locations.map((l) => `<option value="${esc(l)}">`).join("");
 }
 
-function renderTable() {
-  let rows = state.requests;
-  if ($("#f-open").checked && !$("#f-status").value) {
-    rows = rows.filter((r) => OPEN_STATUSES.includes(r.status));
+/* ---------- הפיד ---------- */
+
+function chipFilter(r) {
+  switch (state.chip) {
+    case "open": return OPEN_STATUSES.includes(r.status);
+    case "overdue": return r.overdue;
+    case "due_soon": return r.due_soon;
+    case "all": return true;
+    default: return r.status === state.chip;
   }
+}
+
+function urgency(r) {
+  if (!OPEN_STATUSES.includes(r.status)) return 1e9; // סגורות בסוף
+  return r.days_to_due == null ? 1e8 : r.days_to_due;
+}
+
+function cardHTML(r) {
+  const open = OPEN_STATUSES.includes(r.status);
+  const rail = r.overdue ? "hot" : r.due_soon ? "warm" : "";
+  const count = r.overdue
+    ? `<span class="count red">⏰ חריגה ${-r.days_to_due} ימים</span>`
+    : r.due_soon
+      ? `<span class="count amber">תג"ב ${r.days_to_due === 0 ? "היום" : r.days_to_due === 1 ? "מחר" : "בעוד יומיים"} · ${fmtDate(r.due_date)}</span>`
+      : open && r.days_to_due != null
+        ? `<span class="count ok">עוד ${r.days_to_due} ימים · ${fmtDate(r.due_date)}</span>`
+        : open
+          ? `<span class="count dim">ללא תג"ב</span>`
+          : `<span class="count ${r.status === "הושלמה" ? "ok" : "dim"}">${r.status === "הושלמה" ? "✔" : ""} ${esc(r.status)} ${fmtDate(r.completed_at?.slice(0, 10) || r.updated_at?.slice(0, 10))}</span>`;
+  const qty = r.quantity ? ` · ${esc(r.quantity)}` : "";
+  const alias = r.project_alias ? ` <span class="alias">(${esc(r.project_alias)})</span>` : "";
+  const prio = r.priority && r.priority !== "רגיל" ? `<span class="pill" style="color:var(--red);border-color:var(--red)">${esc(r.priority)}</span>` : "";
+  return `<button class="req ${rail} ${open ? "" : "closed"}" data-id="${r.id}">
+    <div class="top"><span class="proj">${esc(r.project) || "ללא פרויקט"}${alias}</span><span class="id">#${r.serial}${r.external_id ? " · #" + esc(r.external_id) : ""}</span></div>
+    <div class="what">${esc(r.subject) || "—"}${qty}${r.location ? " · " + esc(r.location) : ""}</div>
+    <div class="foot">
+      ${count}
+      <span class="pill"><span class="lamp ${LAMP[r.status] || "grey"}"></span>${esc(r.status)}</span>
+      ${r.requester ? `<span class="pill">${esc(r.requester)}</span>` : ""}
+      ${prio}
+    </div>
+    ${r.missing.length ? `<div class="miss">⚠ חסר: ${esc(r.missing.join(", "))}</div>` : ""}
+  </button>`;
+}
+
+function renderFeed() {
+  const rows = state.requests.filter(chipFilter).sort((a, b) => urgency(a) - urgency(b));
   $("#empty").hidden = rows.length > 0;
-  $("#tbl-body").innerHTML = rows.map((r) => {
-    const dueBadge = r.overdue
-      ? `<span class="due-badge overdue">חריגה ${-r.days_to_due} ימים</span>`
-      : r.due_soon ? `<span class="due-badge soon">עוד ${r.days_to_due} ימים</span>` : "";
-    const missing = r.missing.length
-      ? `<div class="sub">⚠ חסרים: ${esc(r.missing.join(", "))}</div>` : "";
-    const alias = r.project_alias ? `<div class="sub">רשום תחת ${esc(r.project_alias)}</div>` : "";
-    const prio = r.priority !== "רגיל" ? ` <span class="prio-${esc(r.priority)}">(${esc(r.priority)})</span>` : "";
-    return `<tr class="${r.overdue ? "row-overdue" : ""}" data-id="${r.id}">
-      <td>#${r.serial}${r.external_id ? `<div class="sub">#${esc(r.external_id)}</div>` : ""}</td>
-      <td>${esc(r.project) || "—"}${alias}</td>
-      <td>${esc(r.subject) || "—"}${prio}${missing}</td>
-      <td>${esc(r.quantity) || "—"}</td>
-      <td>${esc(r.requester) || "—"}</td>
-      <td>${esc(r.approver) || "—"}<div class="sub">${r.approval_date ? "אושר " + fmtDate(r.approval_date) : "טרם אושר"}</div></td>
-      <td>${esc(r.location) || "—"}</td>
-      <td>${fmtDate(r.due_date)}${dueBadge ? "<br>" + dueBadge : ""}</td>
-      <td><span class="chip s-${esc(r.status.split(" ")[0])}">${esc(r.status)}</span></td>
-    </tr>`;
-  }).join("");
-  document.querySelectorAll("#tbl-body tr").forEach((tr) =>
-    tr.addEventListener("click", () => openDetail(+tr.dataset.id)));
+  const openRows = rows.filter((r) => OPEN_STATUSES.includes(r.status));
+  const closedRows = rows.filter((r) => !OPEN_STATUSES.includes(r.status));
+  let html = "";
+  if (openRows.length) html += `<div class="day-label">לפי דחיפות תג"ב</div>` + openRows.map(cardHTML).join("");
+  if (closedRows.length) html += `<div class="day-label">סגורות</div>` + closedRows.map(cardHTML).join("");
+  $("#feed").innerHTML = html;
+  document.querySelectorAll(".req").forEach((el) =>
+    el.addEventListener("click", () => openDetail(+el.dataset.id)));
 }
 
 /* ---------- פרטי בקשה ---------- */
@@ -133,39 +169,54 @@ async function openDetail(id) {
   const r = await api(`/api/requests/${id}`);
   const hist = await api(`/api/requests/${id}/history`);
   state.current = r;
-  $("#d-title").textContent = `בקשה #${r.serial} — ${r.project || "ללא פרויקט"}`;
+  $("#d-title").innerHTML = `#${r.serial} · ${esc(r.project) || "ללא פרויקט"}
+    <span class="sub2">${esc(r.subject) || ""}</span>`;
+  $("#d-banner").innerHTML = r.overdue
+    ? `<div class="banner red">⏰ חריגת תג"ב — ${-r.days_to_due} ימים. תג"ב נדרש: ${fmtDate(r.due_date)}</div>`
+    : r.missing.length
+      ? `<div class="banner amber">⚠ חסרים: ${esc(r.missing.join(", "))} — מעוכבת עד השלמה (נוהל 16/06)</div>`
+      : "";
   const rows = [
-    ["סטטוס", `<span class="chip s-${esc(r.status.split(" ")[0])}">${esc(r.status)}</span>`],
-    ["פרויקט", esc(r.project) + (r.project_alias ? ` <span class="sub">(רשום תחת ${esc(r.project_alias)})</span>` : "")],
-    ["נושא הייצור", esc(r.subject)],
+    ["סטטוס", `<span class="lamp ${LAMP[r.status] || "grey"}"></span>${esc(r.status)}`],
+    ["רשום תחת", r.project_alias ? esc(r.project_alias) : null],
     ["כמות", esc(r.quantity)],
     ["מכניס עבודה", esc(r.requester)],
-    ["בקר מאשר", esc(r.approver)],
-    ["תאריך אישור", fmtDate(r.approval_date)],
+    ["בקר מאשר", r.approver ? `${esc(r.approver)}${r.approval_date ? ` · <span class="num">${fmtDate(r.approval_date)}</span>` : " · טרם אושר"}` : null],
     ["מיקום ייצור", esc(r.location)],
-    ['תג"ב נדרש', fmtDate(r.due_date)],
+    ['תג"ב נדרש', `<span class="num">${fmtDate(r.due_date)}</span>`],
     ["שם ייצור במערכת", esc(r.system_name)],
-    ["מזהה חיצוני", r.external_id ? "#" + esc(r.external_id) : "—"],
-    ["עדיפות", esc(r.priority)],
-    ["הערות מיוחדות", esc(r.notes) || "—"],
-    ["נקלטה", fmtDate(r.created_at?.slice(0, 10))],
+    ["מזהה חיצוני", r.external_id ? `<span class="num">#${esc(r.external_id)}</span>` : null],
+    ["עדיפות", r.priority !== "רגיל" ? esc(r.priority) : null],
+    ["הערות מיוחדות", esc(r.notes) || null],
+    ["נקלטה", `<span class="num">${fmtDate(r.created_at?.slice(0, 10))}</span>`],
   ];
-  const missingBanner = r.missing.length
-    ? `<div class="missing-banner">⚠ שדות חובה חסרים: ${esc(r.missing.join(", "))} — הבקשה מעוכבת עד השלמתם (נוהל יוסי 16/06)</div>` : "";
-  $("#d-body").innerHTML = `${missingBanner}
-    <dl class="detail-grid">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v || "—"}</dd>`).join("")}</dl>
+  $("#d-body").innerHTML = `
+    <div class="kv">${rows.filter(([, v]) => v).map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v || "—"}</span></div>`).join("")}</div>
     <div class="hist"><h3>היסטוריה</h3>${hist.map((h) => `
-      <div class="hist-item">
-        <span class="ts">${esc(h.ts.replace("T", " "))}</span> —
-        <b>${esc(h.action)}</b>${h.field ? " (" + esc(h.field) + ")" : ""}
+      <div class="h-item"><span class="ts">${esc(h.ts.slice(5, 16).replace("T", " "))}</span> ·
+        <b>${esc(h.action)}</b>${h.field && h.field !== "status" ? " (" + esc(h.field) + ")" : ""}
         ${h.old_value || h.new_value ? `: ${esc(h.old_value) || "ריק"} ← ${esc(h.new_value) || "ריק"}` : ""}
         ${h.actor ? `<span class="ts"> · ${esc(h.actor)}</span>` : ""}
-      </div>`).join("") || '<div class="sub">אין רשומות</div>'}</div>`;
-  $("#d-status-btns").innerHTML = (NEXT_ACTIONS[r.status] || []).map((s) =>
-    `<button class="btn btn-primary btn-status" data-status="${esc(s)}">${esc(s === "הושלמה" ? "✔ הושלמה" : s)}</button>`).join("");
-  document.querySelectorAll("#d-status-btns button").forEach((b) =>
+      </div>`).join("") || '<div class="h-item">אין רשומות</div>'}</div>`;
+  $("#d-foot").innerHTML = `
+    ${(NEXT_ACTIONS[r.status] || []).map((s) =>
+      `<button class="btn ${s === "הושלמה" || s === "מאושרת" ? "primary" : ""} half" data-status="${esc(s)}">${s === "הושלמה" ? "✔ סמן הושלמה" : s}</button>`).join("")}
+    <button class="btn half" id="d-copy">📋 העתק כ-WhatsApp</button>
+    <button class="btn half" id="d-edit">✏️ עריכה</button>`;
+  document.querySelectorAll("#d-foot [data-status]").forEach((b) =>
     b.addEventListener("click", () => changeStatus(r.id, b.dataset.status)));
+  $("#d-copy").addEventListener("click", copyWhatsApp);
+  $("#d-edit").addEventListener("click", () => { $("#modal-detail").hidden = true; openForm("edit", state.current); });
   $("#modal-detail").hidden = false;
+}
+
+async function copyWhatsApp() {
+  try {
+    await navigator.clipboard.writeText(state.current.whatsapp);
+    toast("הועתק — אפשר להדביק ב-WhatsApp");
+  } catch {
+    toast("ההעתקה נחסמה ע\"י הדפדפן");
+  }
 }
 
 async function changeStatus(id, status) {
@@ -265,22 +316,23 @@ async function saveForm() {
 
 $("#btn-new").addEventListener("click", () => openForm("new"));
 $("#btn-import").addEventListener("click", () => openForm("import"));
+$("#btn-queue").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 $("#btn-parse").addEventListener("click", parseImport);
 $("#btn-save").addEventListener("click", (e) => { e.preventDefault(); saveForm().catch((err) => toast(err.message)); });
-$("#d-edit").addEventListener("click", () => { $("#modal-detail").hidden = true; openForm("edit", state.current); });
-$("#d-copy").addEventListener("click", async () => {
-  await navigator.clipboard.writeText(state.current.whatsapp);
-  toast("הועתק ללוח — אפשר להדביק ב-WhatsApp");
+$("#btn-subfilters").addEventListener("click", () => {
+  $("#subfilters").classList.toggle("open");
+  $("#btn-subfilters").classList.toggle("on");
 });
 document.querySelectorAll("[data-close]").forEach((b) =>
-  b.addEventListener("click", () => (b.closest(".modal-back").hidden = true)));
-document.querySelectorAll(".modal-back").forEach((m) =>
+  b.addEventListener("click", () => (b.closest(".sheet-back").hidden = true)));
+document.querySelectorAll(".sheet-back").forEach((m) =>
   m.addEventListener("click", (e) => { if (e.target === m) m.hidden = true; }));
 $("#req-form").addEventListener("input", updateMissingNote);
-for (const id of ["#f-status", "#f-project", "#f-location", "#f-open"]) {
-  $(id).addEventListener("change", refresh);
-}
+for (const id of ["#f-project", "#f-location"]) $(id).addEventListener("change", refresh);
 let searchT;
 $("#f-search").addEventListener("input", () => { clearTimeout(searchT); searchT = setTimeout(refresh, 250); });
+
+const now = new Date();
+$("#clock-date").textContent = `${now.getDate()}.${now.getMonth() + 1}.${String(now.getFullYear()).slice(2)}`;
 
 refresh().catch((err) => toast(err.message));
