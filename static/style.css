@@ -1,0 +1,135 @@
+:root {
+  --bg: #f4f6f9; --card: #ffffff; --border: #dde3ec;
+  --text: #1c2733; --muted: #64748b;
+  --primary: #1d6fd1; --primary-dark: #155cb0;
+  --red: #d43f3f; --red-bg: #fdecec;
+  --orange: #d97a10; --orange-bg: #fdf3e3;
+  --green: #2e8b57; --green-bg: #e8f5ee;
+  --blue-bg: #e8f0fc; --gray-bg: #eef1f5;
+  --purple: #7548c9; --purple-bg: #f1ebfc;
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", "Arial Hebrew", Arial, sans-serif;
+  font-size: 15px;
+}
+header { background: #14273f; color: #fff; padding: 14px 0; }
+.header-inner {
+  max-width: 1240px; margin: 0 auto; padding: 0 20px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+h1 { font-size: 21px; }
+main { max-width: 1240px; margin: 20px auto; padding: 0 20px; }
+
+/* כפתורים */
+.btn {
+  border: 1px solid transparent; border-radius: 8px; padding: 8px 16px;
+  font-size: 14px; cursor: pointer; font-family: inherit;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: #fff; color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--gray-bg); }
+.btn-status { padding: 6px 12px; margin-inline-start: 6px; }
+.btn-close { background: none; border: none; font-size: 26px; cursor: pointer; color: var(--muted); }
+
+/* כרטיסי מצב */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.stat {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; cursor: pointer;
+}
+.stat b { display: block; font-size: 26px; margin-bottom: 2px; }
+.stat span { color: var(--muted); font-size: 13px; }
+.stat.alert b { color: var(--red); }
+.stat.warn b { color: var(--orange); }
+.stat.ok b { color: var(--green); }
+
+/* סינון */
+.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.filters input[type=search] { flex: 2; min-width: 220px; }
+.filters select { flex: 1; min-width: 140px; }
+input, select, textarea {
+  font-family: inherit; font-size: 14px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+}
+.chk { display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap; }
+
+/* טבלה */
+.table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: right; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--gray-bg); font-size: 13px; color: var(--muted); position: sticky; top: 0; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #f6f9fe; }
+tr.row-overdue { background: var(--red-bg); }
+tr.row-overdue:hover { background: #fbe0e0; }
+td .sub { color: var(--muted); font-size: 12.5px; }
+.empty { padding: 40px; text-align: center; color: var(--muted); }
+
+/* תגיות */
+.chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; white-space: nowrap; }
+.chip.s-מעוכבת { background: var(--red-bg); color: var(--red); }
+.chip.s-ממתינה { background: var(--orange-bg); color: var(--orange); }
+.chip.s-מאושרת { background: var(--blue-bg); color: var(--primary); }
+.chip.s-בייצור { background: var(--purple-bg); color: var(--purple); }
+.chip.s-הושלמה { background: var(--green-bg); color: var(--green); }
+.chip.s-נדחתה, .chip.s-בוטלה { background: var(--gray-bg); color: var(--muted); }
+.due-badge { font-size: 12px; border-radius: 6px; padding: 2px 6px; display: inline-block; margin-top: 2px; }
+.due-badge.overdue { background: var(--red); color: #fff; }
+.due-badge.soon { background: var(--orange); color: #fff; }
+.prio-דחוף { color: var(--orange); font-weight: 600; }
+.prio-מיידי { color: var(--red); font-weight: 700; }
+
+/* מודאלים */
+.modal-back {
+  position: fixed; inset: 0; background: rgba(15, 25, 40, .55);
+  display: flex; align-items: flex-start; justify-content: center; padding: 4vh 16px; z-index: 10;
+}
+.modal-back[hidden], .toast[hidden] { display: none; }
+.modal {
+  background: var(--card); border-radius: 12px; width: 760px; max-width: 100%;
+  max-height: 90vh; display: flex; flex-direction: column;
+}
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+.modal-head h2 { font-size: 18px; }
+.modal-body { padding: 16px 20px; overflow-y: auto; }
+.modal-foot { display: flex; gap: 8px; align-items: center; padding: 12px 20px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+/* טופס */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.grid label.wide { grid-column: 1 / -1; }
+.grid input, .grid select, .grid textarea { color: var(--text); }
+textarea { resize: vertical; }
+#import-zone textarea { width: 100%; direction: rtl; margin: 6px 0; }
+.parse-note { margin-top: 8px; font-size: 13.5px; }
+.parse-note.ok { color: var(--green); }
+.parse-note.warn { color: var(--orange); }
+hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.missing-note { color: var(--red); font-size: 13.5px; margin-top: 10px; min-height: 18px; }
+
+/* פרטי בקשה */
+.detail-grid { display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; }
+.detail-grid dt { color: var(--muted); font-size: 13px; padding-top: 2px; }
+.detail-grid dd { white-space: pre-wrap; }
+.hist { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 10px; }
+.hist h3 { font-size: 14px; margin-bottom: 8px; color: var(--muted); }
+.hist-item { font-size: 13px; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+.hist-item .ts { color: var(--muted); font-size: 12px; }
+.missing-banner {
+  background: var(--red-bg); color: var(--red); border-radius: 8px;
+  padding: 8px 12px; margin-bottom: 12px; font-size: 13.5px;
+}
+
+/* טוסט */
+.toast {
+  position: fixed; bottom: 24px; inset-inline-start: 50%; transform: translateX(50%);
+  background: #14273f; color: #fff; padding: 10px 22px; border-radius: 999px; z-index: 20;
+}
+@media (max-width: 700px) {
+  .grid, .detail-grid { grid-template-columns: 1fr; }
+  .header-actions { width: 100%; display: flex; gap: 8px; }
+}

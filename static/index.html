@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בקרת בקשות ייצור</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <h1>🏭 בקרת בקשות ייצור</h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="btn-import">📋 ייבוא מ-WhatsApp</button>
+      <button class="btn btn-primary" id="btn-new">＋ בקשה חדשה</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="stats" id="stats"></section>
+
+  <section class="filters">
+    <input type="search" id="f-search" placeholder="חיפוש חופשי: פרויקט, מבקש, נושא, #מזהה...">
+    <select id="f-status"><option value="">כל הסטטוסים</option></select>
+    <select id="f-project"><option value="">כל הפרויקטים</option></select>
+    <select id="f-location"><option value="">כל מיקומי הייצור</option></select>
+    <label class="chk"><input type="checkbox" id="f-open" checked> פתוחות בלבד</label>
+  </section>
+
+  <section class="table-wrap">
+    <table id="tbl">
+      <thead><tr>
+        <th>#</th><th>פרויקט</th><th>נושא הייצור</th><th>כמות</th>
+        <th>מכניס עבודה</th><th>בקר</th><th>מיקום</th><th>תג"ב</th><th>סטטוס</th>
+      </tr></thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>אין בקשות להצגה</div>
+  </section>
+</main>
+
+<!-- מודאל פרטי בקשה -->
+<div class="modal-back" id="modal-detail" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="d-title"></h2>
+      <button class="btn-close" data-close>&times;</button>
+    </div>
+    <div class="modal-body" id="d-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="d-copy">📋 העתק כ-WhatsApp</button>
+      <button class="btn btn-secondary" id="d-edit">✏️ עריכה</button>
+      <span class="spacer"></span>
+      <span id="d-status-btns"></span>
+    </div>
+  </div>
+</div>
+
+<!-- מודאל טופס (חדשה / עריכה / ייבוא) -->
+<div class="modal-back" id="modal-form" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="form-title">בקשה חדשה</h2>
+      <button class="btn-close" data-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="import-zone" hidden>
+        <label>הדבק כאן את הודעת ה-WhatsApp:</label>
+        <textarea id="import-text" rows="8" placeholder="*בקשת ייצור*&#10;פרויקט:&#10;* ..."></textarea>
+        <button class="btn btn-primary" id="btn-parse">פרק לשדות ⬇</button>
+        <div id="parse-result" class="parse-note"></div>
+        <hr>
+      </div>
+      <form id="req-form">
+        <div class="grid">
+          <label>פרויקט *<input name="project"></label>
+          <label>רשום תחת (כינוי)<input name="project_alias"></label>
+          <label class="wide">נושא הייצור *<textarea name="subject" rows="2"></textarea></label>
+          <label>כמות *<input name="quantity"></label>
+          <label>מכניס עבודה *<input name="requester"></label>
+          <label>בקר מאשר *<input name="approver"></label>
+          <label>תאריך אישור *<input name="approval_date" type="date"></label>
+          <label>מיקום ייצור *<input name="location" list="loc-list"><datalist id="loc-list"></datalist></label>
+          <label>תג"ב נדרש *<input name="due_date" type="date"></label>
+          <label class="wide">שם ייצור במערכת *<input name="system_name"></label>
+          <label>מזהה חיצוני (#)<input name="external_id"></label>
+          <label>עדיפות<select name="priority"><option>רגיל</option><option>דחוף</option><option>מיידי</option></select></label>
+          <label class="wide">הערות מיוחדות<textarea name="notes" rows="2"></textarea></label>
+          <label>שם המעדכן (מי מזין כרגע)<input name="actor" id="actor-input"></label>
+        </div>
+        <div class="missing-note" id="form-missing"></div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" id="btn-save">שמירה</button>
+      <button class="btn btn-secondary" data-close>ביטול</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
